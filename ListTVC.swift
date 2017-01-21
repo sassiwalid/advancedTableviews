@@ -9,12 +9,12 @@
 import UIKit
 import CoreData
 class ListTVC: UITableViewController {
-  var items = [NSManagedObject]()
+  var books = [Books]()
   // it should be optional
   var managedObjectContext : NSManagedObjectContext?
     override func viewDidLoad() {
       super.viewDidLoad()
-    // add reference to the viewContext by using appdelegate reference
+    // add reference to the v iewContext by using appdelegate reference
     let delegate = UIApplication.shared.delegate as! AppDelegate
     managedObjectContext = delegate.persistentContainer.viewContext
     // call loadData Function
@@ -22,12 +22,13 @@ class ListTVC: UITableViewController {
     }
   func loadData(){
     // create NSFetchRequest reference
-    let request :NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "Items")
+    //let request :NSFetchRequest<NSManagedObject> = NSFetchRequest(entityName: "Books")
+    let request : NSFetchRequest<Books> = Books.fetchRequest()
     do{
     // retrieve data from Item entity with managedObhectContext object
     let results = try managedObjectContext!.fetch(request)
     // add to items array
-    items = results
+    books = results
     // reload tableview Data
     self.tableView.reloadData()
     }
@@ -49,12 +50,20 @@ class ListTVC: UITableViewController {
     }
     // add addAction button
     let addAction = UIAlertAction(title: "ADD", style: UIAlertActionStyle.default) { (action: UIAlertAction) in
-    let text = alertController.textFields?.first
     // add data to the Item Entity
-    let entity = NSEntityDescription.entity(forEntityName: "Items", in: self.managedObjectContext!)
+    /*let entity = NSEntityDescription.entity(forEntityName: "Books", in: self.managedObjectContext!)
     let items = NSManagedObject(entity: entity!, insertInto: self.managedObjectContext)
-    // using KVC pattern to change data in the entity 
-    items.setValue(text?.text, forKey: "itemName")
+    // using KVC pattern to change data in the entity
+    items.setValue(text?.text, forKey: "bookName")*/
+    // using managed object book subclass
+      let itemString : String?
+      if (alertController.textFields?.first!.text != "") {
+        itemString = alertController.textFields?.first!.text
+      }else{
+        return
+      }
+      let book = Books(context: self.managedObjectContext!)
+      book.bookName = itemString
     // now save changing in the Core Data
       do {
         try self.managedObjectContext!.save()
@@ -84,7 +93,7 @@ class ListTVC: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return items.count
+        return books.count
     }
 
   
@@ -92,8 +101,8 @@ class ListTVC: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 
         // Configure the cell
-      let item = items[indexPath.row]
-      cell.textLabel?.text = item.value(forKey: "itemName") as? String
+      let item = books[indexPath.row]
+      cell.textLabel?.text = item.bookName
       return cell
     }
   
